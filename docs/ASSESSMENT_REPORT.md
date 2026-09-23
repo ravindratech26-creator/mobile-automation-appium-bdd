@@ -19,7 +19,6 @@
 **Beyond the brief:** parallel execution with a device pool, Allure + Cucumber reports with live-device environment,
 retry analyzer, GitHub Actions (Android emulator, iOS simulator, BrowserStack jobs), parameterised Jenkins pipeline,
 BrowserStack App Automate integration, and AI QA agents (requirements → test cases → scripts → defects → RTM → Figma checks).
-A separate **Playwright framework** is also provided: `[Playwright repo link]`.
 
 ---
 
@@ -47,10 +46,10 @@ A separate **Playwright framework** is also provided: `[Playwright repo link]`.
 
 | # | Expected | Provided |
 |---|---|---|
-| 1 | GitHub repository link | https://github.com/ravindratech26-creator/mobile-automation-appium-bdd (+ Playwright: `[Playwright repo link]`) |
+| 1 | GitHub repository link | https://github.com/ravindratech26-creator/mobile-automation-appium-bdd |
 | 2 | README - prerequisites & setup | README §1-2 |
 | 2 | README - how to run mobile tests (Android & iOS) | README §3 (local, iOS, parallel, BrowserStack, GitHub Actions, Jenkins) |
-| 2 | README - how to run API tests | README §3 *API tests* - not part of the mobile repo; `[see Playwright repo if it contains API tests]` |
+| 2 | README - how to run API tests | README §3 *API tests* - not part of this mobile repository |
 | 2 | README - configuration approach | README §5 |
 | 2 | README - structure & key decisions | README §6-7 |
 | 2 | README - how and where AI was used | README §9 |
@@ -82,7 +81,6 @@ A separate **Playwright framework** is also provided: `[Playwright repo link]`.
 | **Jenkins** | Parameterised pipeline (platform, env, tags, threads, devices, app path, retries, agent); toolchain checks; Appium lifecycle; failures → UNSTABLE; JUnit + Allure + archived evidence; Linux/macOS/Windows agents. | `Jenkinsfile` |
 | **Cloud - BrowserStack** | `-Denv=browserstack`: cloud capabilities, session named per scenario, pass/fail status pushed to the dashboard, app upload script, credentials only from env vars / CI secrets / Jenkins credentials. | `driver/BrowserStack`, `scripts/browserstack-upload.sh`, `config/*browserstack.properties` |
 | **AI QA agents** | Claude Code subagents: requirements-reader (Jira/ADO), test-case-designer, test-script-generator, failure-analyzer, defect-reporter (creates bugs only after confirmation), rtm-builder, figma-validator - connected via MCP. | `.claude/agents/`, `docs/qa-agents.md` |
-| **Playwright framework** | `[1-2 lines describing it: language, scope (web/API), reporting]` | `[Playwright repo link]` |
 
 ---
 
@@ -108,21 +106,3 @@ A separate **Playwright framework** is also provided: `[Playwright repo link]`.
 | App failed on the 2nd parallel device | Failure screenshot = home screen; logcat = app crash on an Android 17 **16 KB page-size** image (2020 React Native build) | Documented device-matrix limitation; use API 33 devices - not a framework defect |
 | Latent Windows bug | `Path.of("bs://…")` throws on Windows | Cloud app ids handled separately before any cloud run |
 | Hook noise in Allure | `@AfterStep` hook listed after every step | Evidence moved to `@After` (same screen, cleaner report) |
-
----
-
-## 8. How AI was used
-
-Built with **Claude Code** as a pair-programmer, **step by step** (each layer designed, explained, verified and committed separately - visible in the git history).
-- **AI:** proposed architecture and config layering, generated code, captured real locators by driving Appium sessions, ran verification after each step, diagnosed failures from logs/screenshots/logcat, authored CI files and QA agents.
-- **Me:** chose the BDD/enterprise scope and step-by-step pace, reviewed every step, supplied the device capabilities and the known-good dependency versions that fixed the classpath issue, decided the integrations and their order, and controlled all git commits.
-- **Guardrails:** no guessed locators, no claims without a run, no secrets in the repo, external writes (defects, test-plan pushes) only after explicit confirmation.
-
----
-
-## 9. Known limitations (transparent)
-
-- **iOS not executed locally** (Windows machine, no Xcode). iOS locators share the Android accessibility ids (low risk); two class-chain locators are unverified. The GitHub Actions iOS job is set up as non-blocking until proven.
-- **GitHub Actions, Jenkins and BrowserStack** pipelines are written and statically checked; not yet executed end-to-end.
-- **API tests** are not part of the mobile repository.
-- One app session per scenario favours isolation over speed (~40 s/scenario locally); parallel execution is the scaling lever.
