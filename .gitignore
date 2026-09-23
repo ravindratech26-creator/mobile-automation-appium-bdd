@@ -28,3 +28,6 @@ allure-report/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code personal settings (agents in .claude/agents ARE committed)
+.claude/settings.local.json
