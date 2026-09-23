@@ -49,7 +49,10 @@ final class DriverFactory {
                 .setAppWaitForLaunch(ConfigReader.getBoolean("app.wait.for.launch", true))
                 .setNoReset(ConfigReader.getBoolean("no.reset", false))
                 .setAutoGrantPermissions(ConfigReader.getBoolean("auto.grant.permissions", true))
-                .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")));
+                .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")))
+                .setUiautomator2ServerLaunchTimeout(millis("uia2.server.launch.timeout", 60000))
+                .setUiautomator2ServerInstallTimeout(millis("uia2.server.install.timeout", 60000))
+                .setAdbExecTimeout(millis("adb.exec.timeout", 60000));
         setIfPresent("platform.version", options::setPlatformVersion);
         setIfPresent("app.package", options::setAppPackage);
         setIfPresent("app.activity", options::setAppActivity);
@@ -90,6 +93,10 @@ final class DriverFactory {
         } catch (MalformedURLException | IllegalArgumentException e) {
             throw new IllegalStateException("Invalid appium.server.url: " + url, e);
         }
+    }
+
+    private static Duration millis(String key, long defaultMillis) {
+        return Duration.ofMillis(Long.parseLong(ConfigReader.get(key, String.valueOf(defaultMillis)).trim()));
     }
 
     private static void setIfPresent(String key, java.util.function.Consumer<String> setter) {

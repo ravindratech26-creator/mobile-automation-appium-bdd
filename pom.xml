@@ -14,9 +14,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependency versions -->
-        <appium.version>9.5.0</appium.version>
+        <!-- Proven-compatible pair: java-client 9.3.0 + Selenium 4.27.0.
+             java-client declares an open Selenium range, so without the BOM pin Maven pulls the
+             newest Selenium (4.49+), which removed html5.LocationContext and breaks AndroidDriver. -->
+        <appium.version>9.3.0</appium.version>
+        <selenium.version>4.27.0</selenium.version>
         <cucumber.version>7.20.1</cucumber.version>
-        <testng.version>7.10.2</testng.version>
+        <testng.version>7.12.0</testng.version>
         <log4j.version>2.24.3</log4j.version>
         <allure.version>2.29.1</allure.version>
         <aspectj.version>1.9.22.1</aspectj.version>
@@ -27,8 +31,21 @@
         <cucumber.filter.tags>not @ignore</cucumber.filter.tags>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Pin every Selenium module to one tested version -->
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-bom</artifactId>
+                <version>${selenium.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-        <!-- Appium Java client (brings Selenium 4) -->
+        <!-- Appium Java client (Selenium version controlled by the BOM above) -->
         <dependency>
             <groupId>io.appium</groupId>
             <artifactId>java-client</artifactId>
