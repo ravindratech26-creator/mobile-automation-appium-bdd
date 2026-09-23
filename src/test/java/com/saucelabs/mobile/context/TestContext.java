@@ -1,5 +1,6 @@
 package com.saucelabs.mobile.context;
 
+import com.saucelabs.mobile.pages.CartPage;
 import com.saucelabs.mobile.pages.LoginPage;
 import com.saucelabs.mobile.pages.ProductsPage;
 
@@ -14,6 +15,7 @@ public class TestContext {
 
     private LoginPage loginPage;
     private ProductsPage productsPage;
+    private CartPage cartPage;
 
     public LoginPage loginPage() {
         if (loginPage == null) {
@@ -27,5 +29,12 @@ public class TestContext {
             productsPage = new ProductsPage();
         }
         return productsPage;
+    }
+
+    public CartPage cartPage() {
+        if (cartPage == null) {
+            cartPage = new CartPage();
+        }
+        return cartPage;
     }
 }

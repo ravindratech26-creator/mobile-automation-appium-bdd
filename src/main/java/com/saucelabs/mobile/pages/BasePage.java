@@ -11,6 +11,7 @@ import io.appium.java_client.HidesKeyboard;
 import io.appium.java_client.pagefactory.AppiumFieldDecorator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 
@@ -56,6 +57,11 @@ public abstract class BasePage {
         field.sendKeys(text);
     }
 
+    protected void tap(By locator, String name) {
+        log.info("Tap '{}'", name);
+        WaitUtils.waitForClickable(locator).click();
+    }
+
     protected String textOf(WebElement element) {
         return WaitUtils.waitForVisible(element).getText().trim();
     }
@@ -72,6 +78,11 @@ public abstract class BasePage {
 
     protected boolean isAndroid() {
         return ConfigReader.platform() == Platform.ANDROID;
+    }
+
+    /** Dynamic-locator equivalent of the @AndroidFindBy/@iOSXCUITFindBy pair. */
+    protected By byPlatform(By android, By ios) {
+        return isAndroid() ? android : ios;
     }
 
     protected void hideKeyboard() {

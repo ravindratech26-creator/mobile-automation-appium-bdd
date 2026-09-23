@@ -2,6 +2,7 @@ package com.saucelabs.mobile.utils;
 
 import com.saucelabs.mobile.config.ConfigReader;
 import com.saucelabs.mobile.driver.DriverManager;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
@@ -12,6 +13,7 @@ import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.WebDriver;
 
 import java.time.Duration;
+import java.util.function.BooleanSupplier;
 
 /**
  * Explicit, condition-based waits. The framework never uses Thread.sleep or implicit waits:
@@ -34,6 +36,15 @@ public final class WaitUtils {
         return wait(defaultTimeout()).until(ExpectedConditions.elementToBeClickable(element));
     }
 
+    /** For dynamic locators built at runtime (e.g. "the ADD TO CART button of product X"). */
+    public static WebElement waitForVisible(By locator) {
+        return wait(defaultTimeout()).until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    public static WebElement waitForClickable(By locator) {
+        return wait(defaultTimeout()).until(ExpectedConditions.elementToBeClickable(locator));
+    }
+
     public static boolean waitForInvisible(WebElement element) {
         return wait(defaultTimeout()).until(ExpectedConditions.invisibilityOf(element));
     }
@@ -43,6 +54,15 @@ public final class WaitUtils {
         try {
             waitForVisible(element, timeout);
             return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    /** Polls any UI state (e.g. "badge shows 2") until true or timeout; never throws. */
+    public static boolean until(BooleanSupplier condition) {
+        try {
+            return wait(defaultTimeout()).until(d -> condition.getAsBoolean());
         } catch (TimeoutException e) {
             return false;
         }
