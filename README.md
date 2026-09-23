@@ -124,7 +124,20 @@ Sample output (Android 13 emulator, `@smoke`):
 Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 ```
-<!-- Add report screenshots to docs/images/ and link them here, e.g. ![Allure overview](docs/images/allure-overview.png) -->
+Sample reports - one passing scenario and one **intentionally failing demo scenario** (used only to show
+failure evidence; not part of the suite):
+
+| Allure overview (live-device environment) | Allure - passed test |
+|---|---|
+| ![Allure overview](docs/images/01-allure-overview.png) | ![Allure passed test](docs/images/02-allure-passed-test.png) |
+
+| Allure - failed test (expected vs actual) | Cucumber HTML - failure with screenshot & page source attachments |
+|---|---|
+| ![Allure failed test](docs/images/03-allure-failed-test.png) | ![Cucumber report](docs/images/04-cucumber-report.png) |
+
+Device screenshot captured automatically at the failing step:
+
+<img src="docs/images/05-failure-device-screenshot.png" alt="Failure screenshot from device" width="260">
 
 ## 5. Configuration approach
 
