@@ -1,0 +1,11 @@
+# Normalise line endings so Windows dev + Linux/macOS CI agents see identical files
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.apk binary
+*.ipa binary
+*.zip binary
+*.png binary
+*.jpg binary
