@@ -87,7 +87,7 @@ Each cloud session is named after the scenario and marked passed/failed on the B
 ### CI
 - **GitHub Actions** (`.github/workflows/mobile-tests.yml`)
   - push / PR -> `@smoke` on an Android API 33 emulator (blocking)
-  - nightly -> `@regression`
+  - nightly -> `@regression` (schedule currently commented out; uncomment `schedule:` to enable)
   - manual *Run workflow* -> choose tags, optionally the iOS simulator job (`macos-15-intel`, experimental)
     and the BrowserStack job (real Android + iOS devices; needs repo secrets `BROWSERSTACK_USERNAME`,
     `BROWSERSTACK_ACCESS_KEY`)
@@ -96,6 +96,7 @@ Each cloud session is named after the scenario and marked passed/failed on the B
   `THREADS`, `DEVICES`, `APP_PATH`, `RETRY_COUNT`, `AGENT_LABEL`. Test failures mark the build **UNSTABLE**
   (not FAILED) so reports are always published; JUnit + Allure + archived evidence. Works on Linux/macOS
   and Windows agents. BrowserStack keys come from a Jenkins credential with id `browserstack`.
+  The nightly `cron` trigger is currently commented out.
 
 ### API tests
 Not part of this submission - the scope delivered is the mobile UI framework. (The layered config,

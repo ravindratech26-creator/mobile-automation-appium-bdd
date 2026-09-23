@@ -24,11 +24,11 @@ pipeline {
         string(name: 'AGENT_LABEL', defaultValue: 'mobile', description: 'Agent label with devices attached')
     }
 
-    triggers {
-        // Nightly run with default parameters (smoke). For a nightly @regression use the
-        // Parameterized Scheduler plugin or a second job with TAGS=@regression.
-        cron('H 2 * * *')
-    }
+    // Nightly schedule paused - uncomment to re-enable (runs with default parameters = smoke).
+    // For a nightly @regression use the Parameterized Scheduler plugin or a second job with TAGS=@regression.
+    // triggers {
+    //     cron('H 2 * * *')
+    // }
 
     options {
         timestamps()
