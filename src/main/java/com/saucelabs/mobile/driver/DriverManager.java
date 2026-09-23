@@ -22,7 +22,8 @@ public final class DriverManager {
             LOG.warn("Driver already running on this thread - reusing it");
             return;
         }
-        DevicePool.Device device = DevicePool.isEnabled() ? DevicePool.acquire() : null;
+        // Cloud providers allocate a device per session themselves - the local pool is not used
+        DevicePool.Device device = DevicePool.isEnabled() && !BrowserStack.isActive() ? DevicePool.acquire() : null;
         try {
             DRIVER.set(DriverFactory.createDriver(device));
             DEVICE.set(device);

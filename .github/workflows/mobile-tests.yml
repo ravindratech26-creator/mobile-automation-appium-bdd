@@ -17,6 +17,10 @@ on:
         description: "Also run the iOS simulator job"
         type: boolean
         default: false
+      run_browserstack:
+        description: "Also run on BrowserStack real devices (uses trial minutes)"
+        type: boolean
+        default: false
 
 concurrency:
   group: mobile-tests-${{ github.ref }}
@@ -172,6 +176,60 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-reports
+          retention-days: 14
+          path: |
+            target/site/allure-maven-plugin
+            target/cucumber-reports
+            target/screenshots
+            target/logs
+
+  browserstack:
+    name: BrowserStack ${{ matrix.platform }} (real device)
+    # Opt-in only: free-trial minutes are limited. Needs repo secrets
+    # BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY (Settings -> Secrets and variables -> Actions).
+    if: github.event.inputs.run_browserstack == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            asset: Android.SauceLabs.Mobile.Sample.app.2.7.1.apk
+          - platform: ios
+            asset: iOS.RealDevice.SauceLabs.Mobile.Sample.app.2.7.1.ipa
+    env:
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      BS_BUILD_NAME: github-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Upload app to BrowserStack
+        run: |
+          mkdir -p apps
+          curl -fsSL -o "apps/${{ matrix.asset }}" "$RELEASES/$APP_VERSION/${{ matrix.asset }}"
+          bash scripts/browserstack-upload.sh ${{ matrix.platform }} "apps/${{ matrix.asset }}"
+
+      - name: Run tests on BrowserStack
+        # Cloud allocates one device per session, so scenarios can run in parallel (trial allows limited sessions)
+        run: mvn -B test -Dplatform=${{ matrix.platform }} -Denv=browserstack -Dthreads=2 "-Dcucumber.filter.tags=${{ env.TAGS }}"
+
+      - name: Build Allure report
+        if: always()
+        run: mvn -B -q allure:report
+
+      - name: Upload reports and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browserstack-${{ matrix.platform }}-reports
           retention-days: 14
           path: |
             target/site/allure-maven-plugin

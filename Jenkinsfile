@@ -42,6 +42,8 @@ pipeline {
         // Agents may be freshly provisioned: never skip Appium's device setup in CI
         SKIP_DEVICE_INITIALIZATION = 'false'
         EXPLICIT_WAIT_SECONDS = '25'
+        // Groups this build's cloud sessions on the BrowserStack dashboard
+        BS_BUILD_NAME = "jenkins-${env.JOB_NAME}-${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -77,6 +79,27 @@ pipeline {
                         timeout(time: 1, unit: 'MINUTES') {
                             waitUntil(initialRecurrencePeriod: 2000) { appiumIsUp() }
                         }
+                    }
+                }
+            }
+        }
+
+        stage('Upload app to BrowserStack') {
+            when { expression { params.EXEC_ENV == 'browserstack' } }
+            steps {
+                script {
+                    if (!params.APP_PATH?.trim()) {
+                        error 'APP_PATH is required for BrowserStack: path to the .apk (Android) or RealDevice .ipa (iOS) on the agent'
+                    }
+                    withCredentials([usernamePassword(credentialsId: 'browserstack',
+                            usernameVariable: 'BROWSERSTACK_USERNAME',
+                            passwordVariable: 'BROWSERSTACK_ACCESS_KEY')]) {
+                        // Git Bash provides "bash" on Windows agents
+                        def cmd = "bash scripts/browserstack-upload.sh ${params.PLATFORM} \"${params.APP_PATH.trim()}\""
+                        def appUrl = isUnix() ? sh(script: cmd, returnStdout: true)
+                                              : bat(script: "@${cmd}", returnStdout: true)
+                        env."BROWSERSTACK_APP_${params.PLATFORM.toUpperCase()}" = appUrl.trim()
+                        echo "BrowserStack app: ${appUrl.trim()}"
                     }
                 }
             }
@@ -149,7 +172,8 @@ String mavenArgs() {
     if (params.DEVICES?.trim()) {
         args << "-Ddevices=${params.DEVICES.trim()}"
     }
-    if (params.APP_PATH?.trim()) {
+    // On BrowserStack the app is the uploaded bs:// id (from the upload stage), not a local path
+    if (params.APP_PATH?.trim() && params.EXEC_ENV != 'browserstack') {
         args << "\"-Dapp.path=${params.APP_PATH.trim()}\""
     }
     return args.join(' ')

@@ -42,15 +42,27 @@ final class DriverFactory {
         return driver;
     }
 
+    /* Options are built in three layers: common (any target) -> cloud OR local-only extras. */
+
     private static UiAutomator2Options androidOptions(DevicePool.Device device) {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setDeviceName(ConfigReader.get("device.name"))
                 .setApp(appPath())
                 .setAppWaitActivity(ConfigReader.get("app.wait.activity", "*"))
-                .setAppWaitForLaunch(ConfigReader.getBoolean("app.wait.for.launch", true))
                 .setNoReset(ConfigReader.getBoolean("no.reset", false))
                 .setAutoGrantPermissions(ConfigReader.getBoolean("auto.grant.permissions", true))
-                .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")))
+                .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")));
+        setIfPresent("app.package", options::setAppPackage);
+        setIfPresent("app.activity", options::setAppActivity);
+
+        if (BrowserStack.isActive()) {
+            setIfPresent("platform.version", options::setPlatformVersion);
+            BrowserStack.apply(options);
+            return options;
+        }
+
+        // Local-only: timeouts/ports/flags that only make sense on a device we control
+        options.setAppWaitForLaunch(ConfigReader.getBoolean("app.wait.for.launch", true))
                 .setUiautomator2ServerLaunchTimeout(millis("uia2.server.launch.timeout", 60000))
                 .setUiautomator2ServerInstallTimeout(millis("uia2.server.install.timeout", 60000))
                 .setAdbExecTimeout(millis("adb.exec.timeout", 60000))
@@ -63,8 +75,6 @@ final class DriverFactory {
         } else {
             setIfPresent("platform.version", options::setPlatformVersion);
         }
-        setIfPresent("app.package", options::setAppPackage);
-        setIfPresent("app.activity", options::setAppActivity);
         return options;
     }
 
@@ -75,8 +85,15 @@ final class DriverFactory {
                 .setBundleId(ConfigReader.get("bundle.id"))
                 .setNoReset(ConfigReader.getBoolean("no.reset", false))
                 .setAutoAcceptAlerts(ConfigReader.getBoolean("auto.accept.alerts", true))
-                .setWdaLaunchTimeout(Duration.ofMillis(Long.parseLong(ConfigReader.get("wda.launch.timeout"))))
                 .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")));
+
+        if (BrowserStack.isActive()) {
+            setIfPresent("platform.version", options::setPlatformVersion);
+            BrowserStack.apply(options);
+            return options;
+        }
+
+        options.setWdaLaunchTimeout(Duration.ofMillis(Long.parseLong(ConfigReader.get("wda.launch.timeout"))));
         if (device != null) {
             options.setUdid(device.udid())
                     .setWdaLocalPort(ConfigReader.getInt("wda.port.base") + device.index());
