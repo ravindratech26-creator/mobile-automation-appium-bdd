@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  data-provider-thread-count = scenarios run at the same time.
+  Keep 1 for a single local emulator; raise it only when that many devices exist
+  (cloud grid / several emulators).
+-->
+<suite name="Mobile BDD Suite" data-provider-thread-count="1" verbose="1">
+    <test name="Cucumber Scenarios">
+        <classes>
+            <class name="com.saucelabs.mobile.runners.TestRunner"/>
+        </classes>
+    </test>
+</suite>
