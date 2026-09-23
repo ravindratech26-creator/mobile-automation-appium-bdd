@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Console + file logging. Every line carries the thread and the scenario name
+  (set by Hooks via ThreadContext), so parallel runs stay readable.
+  Change verbosity without editing this file:  mvn test -Dlog.level=DEBUG
+-->
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_DIR">target/logs</Property>
+        <Property name="PATTERN">%d{HH:mm:ss.SSS} %-5level [%t] [%X{scenario}] %c{1} - %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${PATTERN}"/>
+        </Console>
+
+        <!-- One file per run; rolled at 10 MB so long CI runs can't fill the disk -->
+        <RollingFile name="File"
+                     fileName="${LOG_DIR}/automation.log"
+                     filePattern="${LOG_DIR}/automation-%d{yyyyMMdd-HHmmss}-%i.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{scenario}] %c{1} - %msg%n"/>
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- Framework code -->
+        <Logger name="com.saucelabs.mobile" level="${sys:log.level:-INFO}" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
+
+        <!-- Third-party libraries: warnings only, to keep logs signal-rich -->
+        <Root level="WARN">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+    </Loggers>
+</Configuration>
