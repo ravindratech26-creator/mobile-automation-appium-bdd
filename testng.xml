@@ -5,6 +5,10 @@
   (cloud grid / several emulators).
 -->
 <suite name="Mobile BDD Suite" data-provider-thread-count="1" verbose="1">
+    <listeners>
+        <!-- Retries failed scenarios retry.count times (common.properties / -Dretry.count) -->
+        <listener class-name="com.saucelabs.mobile.listeners.RetryTransformer"/>
+    </listeners>
     <test name="Cucumber Scenarios">
         <classes>
             <class name="com.saucelabs.mobile.runners.TestRunner"/>

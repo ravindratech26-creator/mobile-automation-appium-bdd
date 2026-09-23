@@ -52,7 +52,9 @@ final class DriverFactory {
                 .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")))
                 .setUiautomator2ServerLaunchTimeout(millis("uia2.server.launch.timeout", 60000))
                 .setUiautomator2ServerInstallTimeout(millis("uia2.server.install.timeout", 60000))
-                .setAdbExecTimeout(millis("adb.exec.timeout", 60000));
+                .setAdbExecTimeout(millis("adb.exec.timeout", 60000))
+                .setDisableWindowAnimation(ConfigReader.getBoolean("disable.window.animation", true))
+                .setSkipDeviceInitialization(ConfigReader.getBoolean("skip.device.initialization", false));
         setIfPresent("platform.version", options::setPlatformVersion);
         setIfPresent("app.package", options::setAppPackage);
         setIfPresent("app.activity", options::setAppActivity);
