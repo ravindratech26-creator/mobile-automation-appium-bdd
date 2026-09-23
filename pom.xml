@@ -29,6 +29,8 @@
         <platform>android</platform>
         <env>local</env>
         <cucumber.filter.tags>not @ignore</cucumber.filter.tags>
+        <!-- Scenarios run concurrently; never more than the number of devices available -->
+        <threads>1</threads>
     </properties>
 
     <dependencyManagement>
@@ -110,6 +112,12 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
+                    <properties>
+                        <property>
+                            <name>dataproviderthreadcount</name>
+                            <value>${threads}</value>
+                        </property>
+                    </properties>
                     <systemPropertyVariables>
                         <platform>${platform}</platform>
                         <env>${env}</env>

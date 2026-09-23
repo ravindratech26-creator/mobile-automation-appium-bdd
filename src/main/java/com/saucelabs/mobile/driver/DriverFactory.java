@@ -27,21 +27,22 @@ final class DriverFactory {
     private DriverFactory() {
     }
 
-    static AppiumDriver createDriver() {
+    /** @param device pooled device for parallel runs, or null to use the single configured device */
+    static AppiumDriver createDriver(DevicePool.Device device) {
         URL serverUrl = serverUrl();
-        LOG.info("Starting {} session on {} [env={}]",
-                ConfigReader.platform(), serverUrl, ConfigReader.env());
+        LOG.info("Starting {} session on {} [env={}, device={}]", ConfigReader.platform(), serverUrl,
+                ConfigReader.env(), device == null ? ConfigReader.get("device.name") : device.udid());
 
         AppiumDriver driver = switch (ConfigReader.platform()) {
-            case ANDROID -> new AndroidDriver(serverUrl, androidOptions());
-            case IOS -> new IOSDriver(serverUrl, iosOptions());
+            case ANDROID -> new AndroidDriver(serverUrl, androidOptions(device));
+            case IOS -> new IOSDriver(serverUrl, iosOptions(device));
         };
 
         LOG.info("Session started: {}", driver.getSessionId());
         return driver;
     }
 
-    private static UiAutomator2Options androidOptions() {
+    private static UiAutomator2Options androidOptions(DevicePool.Device device) {
         UiAutomator2Options options = new UiAutomator2Options()
                 .setDeviceName(ConfigReader.get("device.name"))
                 .setApp(appPath())
@@ -55,13 +56,19 @@ final class DriverFactory {
                 .setAdbExecTimeout(millis("adb.exec.timeout", 60000))
                 .setDisableWindowAnimation(ConfigReader.getBoolean("disable.window.animation", true))
                 .setSkipDeviceInitialization(ConfigReader.getBoolean("skip.device.initialization", false));
-        setIfPresent("platform.version", options::setPlatformVersion);
+        if (device != null) {
+            // Pooled devices may run different OS versions - let Appium detect it per device
+            options.setUdid(device.udid())
+                    .setSystemPort(ConfigReader.getInt("system.port.base") + device.index());
+        } else {
+            setIfPresent("platform.version", options::setPlatformVersion);
+        }
         setIfPresent("app.package", options::setAppPackage);
         setIfPresent("app.activity", options::setAppActivity);
         return options;
     }
 
-    private static XCUITestOptions iosOptions() {
+    private static XCUITestOptions iosOptions(DevicePool.Device device) {
         XCUITestOptions options = new XCUITestOptions()
                 .setDeviceName(ConfigReader.get("device.name"))
                 .setApp(appPath())
@@ -70,7 +77,12 @@ final class DriverFactory {
                 .setAutoAcceptAlerts(ConfigReader.getBoolean("auto.accept.alerts", true))
                 .setWdaLaunchTimeout(Duration.ofMillis(Long.parseLong(ConfigReader.get("wda.launch.timeout"))))
                 .setNewCommandTimeout(Duration.ofSeconds(ConfigReader.getInt("new.command.timeout")));
-        setIfPresent("platform.version", options::setPlatformVersion);
+        if (device != null) {
+            options.setUdid(device.udid())
+                    .setWdaLocalPort(ConfigReader.getInt("wda.port.base") + device.index());
+        } else {
+            setIfPresent("platform.version", options::setPlatformVersion);
+        }
         return options;
     }
 

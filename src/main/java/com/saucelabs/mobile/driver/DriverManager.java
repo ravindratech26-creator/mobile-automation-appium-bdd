@@ -12,6 +12,7 @@ public final class DriverManager {
 
     private static final Logger LOG = LogManager.getLogger(DriverManager.class);
     private static final ThreadLocal<AppiumDriver> DRIVER = new ThreadLocal<>();
+    private static final ThreadLocal<DevicePool.Device> DEVICE = new ThreadLocal<>();
 
     private DriverManager() {
     }
@@ -21,7 +22,14 @@ public final class DriverManager {
             LOG.warn("Driver already running on this thread - reusing it");
             return;
         }
-        DRIVER.set(DriverFactory.createDriver());
+        DevicePool.Device device = DevicePool.isEnabled() ? DevicePool.acquire() : null;
+        try {
+            DRIVER.set(DriverFactory.createDriver(device));
+            DEVICE.set(device);
+        } catch (RuntimeException e) {
+            DevicePool.release(device);   // session failed to start: give the device back
+            throw e;
+        }
     }
 
     public static AppiumDriver getDriver() {
@@ -48,6 +56,8 @@ public final class DriverManager {
             LOG.warn("Error while quitting driver: {}", e.getMessage());
         } finally {
             DRIVER.remove();
+            DevicePool.release(DEVICE.get());
+            DEVICE.remove();
         }
     }
 }
