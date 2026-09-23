@@ -1,0 +1,30 @@
+# Build output (includes allure-results, cucumber reports)
+target/
+
+# App binaries - large, downloaded separately (see README)
+apps/*.apk
+apps/*.ipa
+apps/*.app
+apps/*.zip
+
+# Runtime artefacts
+logs/
+screenshots/
+allure-report/
+.allure/
+
+# Local-only overrides (never commit device IDs / cloud keys)
+*.local.properties
+.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
